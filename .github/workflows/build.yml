@@ -1,0 +1,41 @@
+---
+# yamllint disable rule:line-length
+name: Build
+
+on:  # yamllint disable-line rule:truthy
+  push:
+
+env:
+  INTER_VERSION: "4.1"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run flake8
+        run: flake8
+      - name: Download Inter
+        run: |
+          curl -fsSL -o inter.zip \
+            "https://github.com/rsms/inter/releases/download/v$INTER_VERSION/Inter-$INTER_VERSION.zip"
+      - name: Unzip Inter
+        run: unzip -q inter.zip -d inter
+      - name: Build Interaki
+        run: python interaki.py inter --extras -o dist
+      - name: Copy license file
+        run: cp LICENSE.md dist/
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: Interaki-v${{ env.INTER_VERSION }}
+          path: dist/
+          if-no-files-found: error
