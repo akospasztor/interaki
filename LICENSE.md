@@ -1,5 +1,5 @@
 
-Copyright (c) 2026 Akos Pasztor (mail@akospasztor.com)
+Copyright (c) 2026 Akos Pasztor (https://github.com/akospasztor/interaki)
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:
