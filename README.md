@@ -6,7 +6,7 @@ associated with brightness and clarity.
 
 ## Modifications
 
-Interaki has the following variations enabled:
+Interaki has the following variations enabled by default:
 
 | Feature | Description                     |
 | ------- | ------------------------------- |
