@@ -192,13 +192,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "inter_dir",
-        help="folder of the original Inter release")
+        help="path to the directory containing the original Inter font "
+             "release files")
     parser.add_argument(
         "-o",
         "--output",
         default=DEFAULT_OUTPUT_DIR,
         help="output directory (if not specified, defaults to: "
-             f"{DEFAULT_OUTPUT_DIR}/)",
+             f"`{DEFAULT_OUTPUT_DIR}`)",
     )
     parser.add_argument(
         "-v",
@@ -209,7 +210,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--extras",
         action="store_true",
-        help="also convert the fonts and stylesheets in the extras and web "
+        help="convert the fonts and stylesheets in the `extras` and `web` "
              "folders",
     )
     args = parser.parse_args()
