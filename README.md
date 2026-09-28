@@ -52,5 +52,7 @@ converted by specifying the `--extras` flag.
 | `-o`, `--output`  | Output folder; if not specified defaults to: `dist`      |
 | `-v`, `--verbose` | Show the full log, including every remapped glyph        |
 
+## Acknowledgements
+
 Inter is a trademark of [Rasmus Andersson](https://rsms.me/)
 ([RSMS](https://learn.microsoft.com/en-us/typography/vendors/#r)).
