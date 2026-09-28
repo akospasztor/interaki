@@ -52,12 +52,5 @@ converted by specifying the `--extras` flag.
 | `-o`, `--output`  | Output folder; if not specified defaults to: `dist`      |
 | `-v`, `--verbose` | Show the full log, including every remapped glyph        |
 
-### Prebuilt fonts
-
-Every push to this repository builds the fonts, including the extras, with
-GitHub Actions. The results can be downloaded as the `Interaki-v<version>`
-artifact of a workflow run on the
-[Actions page](https://github.com/akospasztor/interaki/actions).
-
 Inter is a trademark of [Rasmus Andersson](https://rsms.me/)
 ([RSMS](https://learn.microsoft.com/en-us/typography/vendors/#r)).
