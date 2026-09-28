@@ -8,11 +8,11 @@ associated with brightness and clarity.
 
 Interaki has the following variations enabled by default:
 
-| Feature | Description                     |
-| ------- | ------------------------------- |
-| `cv05`  | Lower-case `L` with tail        |
-| `cv07`  | Alternate German double s (`ß`) |
-| `ss03`  | Round quotes & commas           |
+| Feature | Description                     | Interaki                                                      | Inter                                                   |
+| ------- | ------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------- |
+| `cv05`  | Lower-case `L` with tail        | ![Illinois text with Interaki](img/illinois-interaki.svg)     | ![Illinois text with Inter](img/illinois-inter.svg)     |
+| `cv07`  | Alternate German double s (`ß`) | ![Seestrasse text with Interaki](img/seestrasse-interaki.svg) | ![Seestrasse text with Inter](img/seestrasse-inter.svg) |
+| `ss03`  | Round quotes & commas           | ![Quote text with Interaki](img/quote-interaki.svg)           | ![Quote text with Inter](img/quote-inter.svg)           |
 
 The features are frozen into the fonts, so they are active even in apps without
 OpenType feature support.
@@ -52,12 +52,7 @@ converted by specifying the `--extras` flag.
 | `-o`, `--output`  | Output folder; if not specified defaults to: `dist`      |
 | `-v`, `--verbose` | Show the full log, including every remapped glyph        |
 
-### Prebuilt fonts
-
-Every push to this repository builds the fonts, including the extras, with
-GitHub Actions. The results can be downloaded as the `Interaki-v<version>`
-artifact of a workflow run on the
-[Actions page](https://github.com/akospasztor/interaki/actions).
+## Acknowledgements
 
 Inter is a trademark of [Rasmus Andersson](https://rsms.me/)
 ([RSMS](https://learn.microsoft.com/en-us/typography/vendors/#r)).
