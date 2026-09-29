@@ -47,10 +47,22 @@ converted by specifying the `--extras` flag.
 
 | Option            | Description                                              |
 | ----------------- | -------------------------------------------------------- |
-| `--extras`        | also convert the fonts in the `extras` and `web` folders |
+| `-e`, `--extras`  | also convert the fonts in the `extras` and `web` folders |
 | `-h`, `--help`    | show the help message of the script                      |
 | `-o`, `--output`  | Output folder; if not specified defaults to: `dist`      |
 | `-v`, `--verbose` | Show the full log, including every remapped glyph        |
+| `--version`       | Show the Interaki version                                |
+
+## Versioning
+
+Interaki has its own `MAJOR.MINOR` version, independent of the Inter version it
+is based on. The version is stored in the fonts with the minor version padded to
+three digits, e.g. `1.0` as `1.000`. The version string of the fonts also
+records the Inter version, e.g. `Version 1.000;Inter 4.001;git-9221beed3`.
+
+| Interaki version | Based on Inter version | Changes                                               |
+| ---------------- | ---------------------- | ----------------------------------------------------- |
+| 1.0              | 4.1                    | Initial release with `cv05`, `cv07` and`ss03` enabled |
 
 ## Acknowledgements
 
