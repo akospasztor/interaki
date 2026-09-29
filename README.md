@@ -8,11 +8,11 @@ associated with brightness and clarity.
 
 Interaki has the following variations enabled by default:
 
-| Feature | Description                     | Interaki                                                      | Inter                                                   |
-| ------- | ------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------- |
-| `cv05`  | Lower-case `L` with tail        | ![Illinois text with Interaki](img/illinois-interaki.svg)     | ![Illinois text with Inter](img/illinois-inter.svg)     |
-| `cv07`  | Alternate German double s (`ß`) | ![Seestrasse text with Interaki](img/seestrasse-interaki.svg) | ![Seestrasse text with Inter](img/seestrasse-inter.svg) |
-| `ss03`  | Round quotes & commas           | ![Quote text with Interaki](img/quote-interaki.svg)           | ![Quote text with Inter](img/quote-inter.svg)           |
+| Feature | Description                     | Interaki                                                                                | Inter                                                                             |
+| ------- | ------------------------------- | --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `cv05`  | Lower-case `L` with tail        | <img src="img/illinois-interaki.png" alt="Illinois text with Interaki" height="50">     | <img src="img/illinois-inter.png" alt="Illinois text with Inter" height="50">     |
+| `cv07`  | Alternate German double s (`ß`) | <img src="img/seestrasse-interaki.png" alt="Seestrasse text with Interaki" height="50"> | <img src="img/seestrasse-inter.png" alt="Seestrasse text with Inter" height="50"> |
+| `ss03`  | Round quotes & commas           | <img src="img/quote-interaki.png" alt="Quote text with Interaki" height="100">          | <img src="img/quote-inter.png" alt="Quote text with Inter" height="100">          |
 
 The features are frozen into the fonts, so they are active even in apps without
 OpenType feature support.
