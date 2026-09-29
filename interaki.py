@@ -16,6 +16,9 @@ from types import SimpleNamespace
 from fontTools.ttLib import TTCollection, TTFont
 from opentype_feature_freezer import RemapByOTL
 
+# Interaki font version
+VERSION = "1.0"
+
 # Default output directory (if not specified)
 DEFAULT_OUTPUT_DIR = "dist"
 
@@ -42,12 +45,12 @@ def remap_features(font: TTFont, features: list[str]) -> dict[str, str]:
     .. note:: The font is modified in-place.
 
     :param font: Font to modify.
-    :param features: OpenType feature tags to freeze, e.g. ``["cv05"]``.
+    :param features: OpenType feature tags to freeze.
     :return: The replaced glyphs, mapped to their alternates.
     :raises ValueError: If the font has no Unicode cmap, if any of the features
         is missing from the font, or if no glyphs were remapped.
     """
-    font_name = font["name"].getDebugName(4)
+    font_name = font['name'].getDebugName(4)
 
     cmap = font.getBestCmap()
     if cmap is None:
@@ -56,7 +59,7 @@ def remap_features(font: TTFont, features: list[str]) -> dict[str, str]:
 
     available = set()
     if "GSUB" in font:
-        feature_records = font["GSUB"].table.FeatureList.FeatureRecord
+        feature_records = font['GSUB'].table.FeatureList.FeatureRecord
         available = {record.FeatureTag for record in feature_records}
     missing = [feature for feature in features if feature not in available]
     if missing:
@@ -65,7 +68,7 @@ def remap_features(font: TTFont, features: list[str]) -> dict[str, str]:
 
     # The font is handed over in memory, so the paths are never used for I/O.
     options = SimpleNamespace(
-        inpath=font["name"].getDebugName(6),
+        inpath=font['name'].getDebugName(6),
         outpath="-",
         features=",".join(features),
         script=None,
@@ -88,50 +91,93 @@ def remap_features(font: TTFont, features: list[str]) -> dict[str, str]:
     return replaced
 
 
-def rename_font(font: TTFont) -> str | None:
-    """Rename the font from Inter to Interaki.
+def set_font_name(font: TTFont, name: str) -> None:
+    """Set the font name.
 
     This function updates the family, full and PostScript names in the name
     table (including the named instances of variable fonts), and in the CFF
-    table of OTF fonts. Copyright and trademark notices are left unchanged.
+    table of OTF fonts.
 
     .. note:: The font is modified in-place.
 
     :param font: Font to rename.
-    :return: The new full name of the font.
+    :param name: New font family name to be set.
     """
     name_ids = set(RENAME_NAME_IDS)
 
     # Variable fonts also store a PostScript name for each named instance
     if "fvar" in font:
         name_ids |= {
-            instance.postscriptNameID for instance in font["fvar"].instances
+            instance.postscriptNameID for instance in font['fvar'].instances
         }
 
-    name = font["name"]
-    for record in name.names:
+    name_table = font['name']
+    for record in name_table.names:
         if record.nameID in name_ids:
-            name.setName(
-                record.toUnicode().replace("Inter", "Interaki"),
+            name_table.setName(
+                record.toUnicode().replace("Inter", name),
                 record.nameID,
                 record.platformID,
                 record.platEncID,
                 record.langID,
             )
 
-    # OTF fonts keep a copy of the PostScript, family and full names in CFF
+    # OTF fonts keep a copy of the PostScript, family and full names in CFF.
+    # Note: Table tags are always four characters, so the tag of the CFF table
+    # is padded with a space: 'CFF '.
     if "CFF " in font:
-        cff = font["CFF "].cff
-        cff.fontNames = [n.replace("Inter", "Interaki") for n in cff.fontNames]
+        cff = font['CFF '].cff
+        cff.fontNames = [n.replace("Inter", name) for n in cff.fontNames]
         top_dict = cff.topDictIndex[0]
-        top_dict.FamilyName = top_dict.FamilyName.replace("Inter", "Interaki")
-        top_dict.FullName = top_dict.FullName.replace("Inter", "Interaki")
+        top_dict.FamilyName = top_dict.FamilyName.replace("Inter", name)
+        top_dict.FullName = top_dict.FullName.replace("Inter", name)
 
-    return name.getDebugName(4)
+
+def set_font_version(font: TTFont, version: str) -> None:
+    """Set the font version.
+
+    This function prepends the supplied version to the version string (name ID
+    5) and the unique font identifier (name ID 3) and updates the font revision
+    in the head table and the version in the CFF table of OTF fonts.
+
+    .. note:: The font is modified in-place.
+
+    :param font: Font to update.
+    :param version: Version in the MAJOR.MINOR format.
+    """
+    # The minor version is padded to three digits, e.g. 1.2 -> 1.002, so the
+    # font revision keeps increasing as a decimal number, e.g. 1.010 > 1.002.
+    major, minor = version.split(".")
+    revision = f"{major}.{int(minor):03d}"
+
+    name = font['name']
+    for record in name.names:
+        if record.nameID == 5:
+            original = record.toUnicode().removeprefix("Version ")
+            text = f"Version {revision};Inter {original}"
+        elif record.nameID == 3:
+            text = f"{revision};{record.toUnicode()}"
+        else:
+            continue
+        name.setName(text, record.nameID, record.platformID,
+                     record.platEncID, record.langID)
+
+    # The font revision is a 16.16 fixed-point number in the font file, but
+    # fontTools takes the actual value and converts it: e.g. 1.500 is stored
+    # as 0x00018000.
+    font['head'].fontRevision = float(revision)  # type: ignore
+
+    # OTF fonts keep a copy of the version in CFF
+    # Note: Table tags are always four characters, so the tag of the CFF table
+    # is padded with a space: 'CFF '.
+    if "CFF " in font:
+        top_dict = font['CFF '].cff.topDictIndex[0]
+        if hasattr(top_dict, "version"):
+            top_dict.version = version
 
 
 def convert_font(font: TTFont) -> None:
-    """Freeze the features and rename the font to Interaki.
+    """Freeze the features, set the font name and set its version.
 
     .. note:: The font is modified in-place.
 
@@ -139,48 +185,50 @@ def convert_font(font: TTFont) -> None:
     :raises ValueError: If the features cannot be frozen, see
         :func:`remap_features`.
     """
-    old_name = font["name"].getDebugName(4)
+    old_name = font['name'].getDebugName(4)
     remapped = remap_features(font, FEATURES)
-    new_name = rename_font(font)
-    print(f"  {old_name} -> {new_name} ({len(remapped)} glyphs remapped)")
+    set_font_name(font, "Interaki")
+    set_font_version(font, VERSION)
+    print(f"  {old_name} -> {font['name'].getDebugName(4)} "
+          f"({len(remapped)} glyphs remapped)")
 
 
-def convert_file(input_path: str, output_dir: str) -> None:
+def convert_file(file_path: str, output_dir: str) -> None:
     """Convert a single font file, e.g. Inter-Bold.otf to Interaki-Bold.otf.
 
     .. note:: The output keeps the format of the input file (TTF, OTF, WOFF or
         WOFF2).
 
-    :param input_path: Path of the Inter font file.
+    :param file_path: Path of the Inter font file.
     :param output_dir: Directory to write the converted file to. It is created
         if it does not exist.
-    :raises ValueError: If the features cannot be frozen, see
-        :func:`remap_features`.
+    :raises ValueError: If the font cannot be converted, see
+        :func:`convert_font`.
     """
-    print(f"Processing {input_path} ...")
-    filename = os.path.basename(input_path).replace("Inter", "Interaki")
+    print(f"Processing {file_path} ...")
+    filename = os.path.basename(file_path).replace("Inter", "Interaki")
     output = os.path.join(output_dir, filename)
-    font = TTFont(input_path)
+    font = TTFont(file_path)
     convert_font(font)
     os.makedirs(output_dir, exist_ok=True)
     font.save(output)
     print(f"Saved {output}")
 
 
-def convert_css(input_path: str, output_dir: str) -> None:
+def convert_css(file_path: str, output_dir: str) -> None:
     """Convert a stylesheet, e.g. inter.css to interaki.css.
 
     This function renames the font families and the referenced font files to
     Interaki.
 
-    :param input_path: Path of the Inter stylesheet.
+    :param file_path: Path of the Inter stylesheet.
     :param output_dir: Directory to write the converted stylesheet to. It is
         created if it does not exist.
     """
-    print(f"Processing {input_path} ...")
-    filename = os.path.basename(input_path).replace("inter", "interaki")
+    print(f"Processing {file_path} ...")
+    filename = os.path.basename(file_path).replace("inter", "interaki")
     output = os.path.join(output_dir, filename)
-    with open(input_path, encoding="utf-8") as f:
+    with open(file_path, encoding="utf-8") as f:
         css = f.read()
     os.makedirs(output_dir, exist_ok=True)
     with open(output, "w", encoding="utf-8") as f:
@@ -193,7 +241,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "inter_dir",
         help="path to the directory containing the original Inter font "
-             "release files")
+             "release files"
+    )
     parser.add_argument(
         "-o",
         "--output",
@@ -202,16 +251,23 @@ if __name__ == "__main__":
              f"`{DEFAULT_OUTPUT_DIR}`)",
     )
     parser.add_argument(
+        "-e",
+        "--extras",
+        action="store_true",
+        help="convert the fonts and stylesheets in the `extras` and `web` "
+             "folders",
+    )
+    parser.add_argument(
         "-v",
         "--verbose",
         action="store_true",
         help="show the full output log, including every remapped glyph",
     )
     parser.add_argument(
-        "--extras",
-        action="store_true",
-        help="convert the fonts and stylesheets in the `extras` and `web` "
-             "folders",
+        "--version",
+        action="version",
+        version=VERSION,
+        help="show the version and exit",
     )
     args = parser.parse_args()
 
@@ -224,6 +280,7 @@ if __name__ == "__main__":
     if args.verbose:
         logging.getLogger("opentype_feature_freezer").setLevel(logging.INFO)
 
+    print(f"Building Interaki {VERSION}")
     print(f"Remapping features: {FEATURES}")
     os.makedirs(args.output, exist_ok=True)
 
@@ -249,10 +306,9 @@ if __name__ == "__main__":
                 output_dir = os.path.join(
                     args.output, os.path.relpath(dirpath, args.inter_dir)
                 )
-
                 for filename in sorted(filenames):
-                    input_path = os.path.join(dirpath, filename)
+                    file_path = os.path.join(dirpath, filename)
                     if filename.endswith(FONT_EXTENSIONS):
-                        convert_file(input_path, output_dir)
+                        convert_file(file_path, output_dir)
                     elif filename.endswith(".css"):
-                        convert_css(input_path, output_dir)
+                        convert_css(file_path, output_dir)

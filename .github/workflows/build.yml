@@ -23,6 +23,8 @@ jobs:
         run: pip install -r requirements.txt
       - name: Run flake8
         run: flake8
+      - name: Get Interaki version
+        run: echo "INTERAKI_VERSION=$(python interaki.py --version)" >> "$GITHUB_ENV"
       - name: Download Inter
         run: |
           curl -fsSL -o inter.zip \
@@ -36,6 +38,6 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: Interaki-v${{ env.INTER_VERSION }}
+          name: Interaki-${{ env.INTERAKI_VERSION }}
           path: dist/
           if-no-files-found: error
